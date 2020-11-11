@@ -3,11 +3,9 @@
 import lombok.Data;
 import javax.persistence.*;
 import java.util.Date;
-
-import lombok.Data;
-
-import javax.persistence.*;
-import java.util.Date;
+import java.lang.Long;
+import java.lang.Integer;
+import java.lang.Double;
 
 /**
 * ${table.tableComment}

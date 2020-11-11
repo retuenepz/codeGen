@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 public class Generator {
-    private String dbHost="192.168.1.112";
-    private String port = "33060";
-    private String dbName = "axc_base";
-    private String username = "zhangjianyu";
+    private String dbHost="";
+    private String port = "";
+    private String dbName = "";
+    private String username = "";
     private String password = "zhangjianyu";
 
-    private String tableName = null;
+    private List<String> tableNameList = new ArrayList<>();
 
 
     static final String  queryTables = "select table_name tableName, engine, table_comment tableComment, create_time createTime\n" +
@@ -48,6 +48,7 @@ public class Generator {
         init();
     }
 
+
     private void init(){
         freemarkerConfig = new FreemarkerConfig();
         try {
@@ -59,15 +60,24 @@ public class Generator {
         columnMapper = new ColumnMapper();
     }
 
-    public void setTableName(String name ){
-        this.tableName = name;
+    public void addTableName(String name ){
+        this.tableNameList.add(name);
     }
     
     public void process() throws IOException, TemplateException {
-        Table table = this.queryTableInfo();
+        if(tableNameList != null && !tableNameList.isEmpty()){
+            for (String tableName : tableNameList) {
+                processOne(tableName);
+            }
+        }
+
+    }
+
+    private void processOne(String tableName) throws IOException, TemplateException {
+        Table table = this.queryTableInfo(tableName);
         processTable(table);
-        
-        List<Column> columns = this.queryColumnInfo();
+
+        List<Column> columns = this.queryColumnInfo(tableName);
         List<FieldGen> fieldGens = columnMapper.processColumn(columns);
         if(table == null){
             System.out.println(String.format("表 %s 不存在",tableName));
@@ -81,13 +91,11 @@ public class Generator {
         Map<String,Object> root = new HashMap<>();
         root.put("table",table);
         root.put("fieldList",fieldGens);
-        FileOutputStream fileOutputStream = new FileOutputStream(new File(outputDir + "entity.java"));
+        FileOutputStream fileOutputStream = new FileOutputStream(new File(outputDir + table.getClassName()+".java"));
         Template entity = freemarkerConfig.getTemplate("entity.ftl");
         entity.process(root,new OutputStreamWriter(fileOutputStream,"UTF-8"));
     }
 
-
-   
 
     private void processTable(Table table) {
         String tableName = table.getTableName();
@@ -95,7 +103,7 @@ public class Generator {
         table.setClassName(className);
     }
 
-    private List<Column> queryColumnInfo() {
+    private List<Column> queryColumnInfo(String tableName) {
         List<Column> columnList = null;
         try (Connection open = sql2o.open()){
             columnList = open.createQuery(queryColumn)
@@ -106,7 +114,7 @@ public class Generator {
         return columnList;
     }
 
-    private Table queryTableInfo() {
+    private Table queryTableInfo(String tableName) {
         Table table = null;
         try (Connection open = sql2o.open()){
             table = open.createQuery(queryTables)
@@ -126,5 +134,4 @@ public class Generator {
             }
         }
     }
-
 }

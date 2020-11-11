@@ -13,8 +13,10 @@ import java.util.List;
 public class App {
     
     public static void main(String[] args) throws IOException, TemplateException {
-        Generator generator = new Generator();
-        generator.setTableName("mvs_spo2_hour");
+        Generator generator = new Generator("host","port","dbName","userName","password");
+
+        generator.addTableName("table1");
+        generator.addTableName("table2");
         generator.process();
     }
 

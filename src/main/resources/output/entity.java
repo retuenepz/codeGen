@@ -68,7 +68,7 @@ public class MvsSpo2Hour {
         * 呼吸率均值
         */
         @Column(name = "avg_value")
-        private  avgValue;
+        private Double avgValue;
         /**
         * 状态（0：正常，1：已删除）
         */
